@@ -44,9 +44,9 @@ jobs:
           registryUrl: ${{ secrets.REGISTRY_LOGIN_SERVER }}
           acrUsername: ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }}
           acrPassword: ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
-          containerAppName: my-container-app
+          containerAppName: pythonapp
           resourceGroup: 'rg-dev-westeurope'
-          imageToDeploy: ${{ env.AZURE_CONATINER_REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
+          imageToBuild: ${{ env.AZURE_CONATINER_REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
 
 
       #- name: 'Deploy to Azure Container Instances'
