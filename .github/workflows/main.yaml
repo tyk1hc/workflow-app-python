@@ -45,8 +45,8 @@ jobs:
           acrUsername: ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }}
           acrPassword: ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
           containerAppName: pythonapp
-          resourceGroup: 'rg-dev-westeurope'
-          imageToBuild: ${{ env.AZURE_CONATINER_REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
+          resourceGroup: rg-dev-westeurope
+          imageToDeploy: ${{ env.AZURE_CONATINER_REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
 
 
       #- name: 'Deploy to Azure Container Instances'
