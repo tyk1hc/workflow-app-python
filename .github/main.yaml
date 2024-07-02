@@ -1,0 +1,62 @@
+name: Deploy API to Web App Container
+
+on:
+    push:
+      branches:
+        - main # The branch to trigger the deployment when you push a commit to it
+    workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # If you are using Nginx server
+    environment: Development
+    env:
+      APP_NAME: genai-api-backend
+      AZURE_CONATINER_REGISTRY_NAME: ${{ vars.AZURE_CONATINER_REGISTRY_NAME }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 'Login via Azure CLI'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_LEARNING_CREDENTIALS }}
+
+      # Connect & build and push to Azure Container Registry (ACR)
+      - name: 'Build and push image'
+        uses: Azure/docker-login@v1
+        with:
+          # Container registry username
+          username: ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }}
+          # Container registry password
+          password: ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
+          # Container registry server url
+          login-server: ${{ env.AZURE_CONATINER_REGISTRY_NAME }}.azurecr.io
+      - run: |
+          docker build . -t ${{ env.AZURE_CONATINER_REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
+          docker push ${{ env.AZURE_CONATINER_REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
+
+      - name: Build and deploy Container App
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          acrName: crimagesdevwesteurope
+          registryUrl: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+          acrUsername: ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }}
+          acrPassword: ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
+          containerAppName: my-container-app
+          resourceGroup: 'rg-dev-westeurope'
+          imageToDeploy: ${{ env.AZURE_CONATINER_REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
+
+
+      #- name: 'Deploy to Azure Container Instances'
+      #  uses: 'azure/aci-deploy@v1'
+      #  with:
+      #    resource-group: 'rg-dev-westeurope'
+      #    dns-name-label: 'genai'
+      #    image: ${{ env.AZURE_CONATINER_REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
+      #    registry-login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+      #    registry-username: ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }}
+      #    registry-password: ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
+      #    name: crimagesdevwesteurope
+      #    location: 'West Europe'
